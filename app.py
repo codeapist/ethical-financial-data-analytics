@@ -219,12 +219,21 @@ else:
         st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("Minimized transaction preview"):
-        preview_cols = ["customer_id", "month", "category", "amount_inr"]
-        preview = view_df[preview_cols].head(30) if use_aggregates else view_df.head(30)
+        if use_aggregates:
+            preview = (
+                demo.groupby(["month", "category"], as_index=False)["amount_inr"]
+                .sum()
+                .sort_values(["month", "category"])
+                .head(30)
+            )
+            st.caption("Showing monthly category totals; customer identifiers are omitted from this aggregate.")
+        else:
+            preview_cols = ["customer_id", "month", "category", "amount_inr"]
+            preview = view_df[preview_cols].head(30)
+            st.caption("Showing a limited synthetic transaction preview. Identifiers are masked by default.")
         st.dataframe(preview, hide_index=True, use_container_width=True)
         st.caption(
-            "Only the minimum fields needed for this preview are displayed. The demo data is generated in memory "
-            "and is not uploaded to a server by this application."
+            "The demo data is generated in memory and is not uploaded to a server by this application."
         )
 
 st.divider()
